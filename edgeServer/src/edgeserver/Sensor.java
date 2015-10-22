@@ -9,7 +9,6 @@ import org.fourthline.cling.UpnpService;
 import org.fourthline.cling.controlpoint.ActionCallback;
 import org.fourthline.cling.model.action.ActionInvocation;
 import org.fourthline.cling.model.meta.Action;
-import org.fourthline.cling.model.meta.RemoteService;
 import org.fourthline.cling.model.meta.Service;
 
 /**
@@ -17,12 +16,14 @@ import org.fourthline.cling.model.meta.Service;
  * @author huberto
  */
 class Sensor {
+    private int id;
     private String nome;
     private String descricao;
     private String modelo;
     private String precisao;
     private String tipo;
     private String gateway;
+    private String urlPublicacao;
     
     Sensor(String nome, String descricao, String modelo, String precisao, String tipo, String gateway) {
         this.nome = nome;
@@ -101,6 +102,22 @@ class Sensor {
 
     public void setGateway(String gateway) {
         this.gateway = gateway;
+    }
+
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
+
+    public String getUrlPublicacao() {
+        return urlPublicacao;
+    }
+
+    public void setUrlPublicacao(String urlPublicacao) {
+        this.urlPublicacao = urlPublicacao;
     }
     
     

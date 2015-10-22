@@ -5,9 +5,17 @@
  */
 package edgeserver;
 
+import java.net.CookieHandler;
+import java.net.CookieManager;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
 import java.util.Scanner;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.apache.http.NameValuePair;
+import org.apache.http.message.BasicNameValuePair;
 import org.fourthline.cling.UpnpService;
 import org.fourthline.cling.UpnpServiceImpl;
 import org.fourthline.cling.controlpoint.*;
@@ -23,7 +31,13 @@ import org.fourthline.cling.registry.*;
  * @author huberto
  */
 public class EdgeServer  implements Runnable {
-
+    
+    private final int ServidorBordaID = 9;
+    private final String urlLogin = "http://localhost/exehdager-teste/index.php/ci_login/logar";
+    private final String insertSensorURI = "http://localhost/exehdager-teste/index.php/cadastros/ci_sensor/gravaSensor";
+    private final String insertGatewayURI = "http://localhost/exehdager-teste/index.php/cadastros/ci_gateway/gravaGateway";
+    private ArrayList<Gateway> gatewaysCadastrados = new ArrayList<>();
+        
     public static void main(String[] args) {
         // Start a user thread that runs the UPnP stack
         Thread clientThread = new Thread(new EdgeServer());
@@ -71,7 +85,7 @@ public class EdgeServer  implements Runnable {
                     }
                     
                 }else if("exec".equals(command)){
-                    Collection<Device> devices = upnpService.getRegistry().getDevices();
+                    /*Collection<Device> devices = upnpService.getRegistry().getDevices();
                     ServiceId serviceId = new UDAServiceId("NodoTemp");
                     RemoteDevice newdevice;
                     
@@ -87,7 +101,7 @@ public class EdgeServer  implements Runnable {
                             executeAction(upnpService, edgeServer);
 
                         }
-                    }
+                    }*/
                     
                 }
             }
@@ -137,8 +151,22 @@ public class EdgeServer  implements Runnable {
                     }
                     System.out.println("------------------------------------------------------------------");
                     
-                    Gateway teste = new Gateway(upnpService, device);
-                    System.out.println(teste.getNome());
+                    Gateway gateway = new Gateway(upnpService, device);
+                    
+                    //System.out.println(gateway.getUid());
+                    
+                    try {
+                        publicaGateway(gateway);
+                        
+                        for(Sensor sensor : gateway.getSensores()){
+                            publicaSensor(gateway, sensor);
+                        }
+                        
+                        gatewaysCadastrados.add(gateway);
+                    } catch (Exception ex) {
+                        Logger.getLogger(EdgeServer.class.getName()).log(Level.SEVERE, null, ex);
+                        System.out.println("DEU PAU!");
+                    }
                     
                     
                 }
@@ -163,6 +191,56 @@ public class EdgeServer  implements Runnable {
             }
 
         };
+    }
+    
+    private void publicaGateway(Gateway gateway) throws Exception{
+        // make sure cookies is turn on
+        CookieHandler.setDefault(new CookieManager());
+
+        HTTPClient http = new HTTPClient();
+
+        List<NameValuePair> postp = new ArrayList<>();
+        postp.add(new BasicNameValuePair("login", "huberto"));
+        postp.add(new BasicNameValuePair("password", "99766330"));
+
+        http.sendPost(this.urlLogin, postp);
+        
+        List<NameValuePair> GatewayParams = new ArrayList<>();
+        GatewayParams.add(new BasicNameValuePair("gateway_nome", gateway.getNome()));
+        GatewayParams.add(new BasicNameValuePair("gateway_servidorborda", Integer.toString(this.ServidorBordaID)));
+        GatewayParams.add(new BasicNameValuePair("gateway_uid", (String)gateway.getUid()));
+
+        String result = http.GetPageContent(this.insertGatewayURI, GatewayParams);
+        
+        gateway.setId(Integer.parseInt(result));
+    }
+    
+    private void publicaSensor(Gateway gateway, Sensor sensor) throws Exception{
+        
+        
+        // make sure cookies is turn on
+        CookieHandler.setDefault(new CookieManager());
+
+        HTTPClient http = new HTTPClient();
+
+        List<NameValuePair> postp = new ArrayList<>();
+        postp.add(new BasicNameValuePair("login", "huberto"));
+        postp.add(new BasicNameValuePair("password", "99766330"));
+
+        http.sendPost(this.urlLogin, postp);
+        
+        List<NameValuePair> SensorParams = new ArrayList<>();
+        SensorParams.add(new BasicNameValuePair("sensor_nome", sensor.getNome()));
+        SensorParams.add(new BasicNameValuePair("sensor_desc", sensor.getDescricao()));
+        SensorParams.add(new BasicNameValuePair("sensor_modelo", sensor.getModelo()));
+        SensorParams.add(new BasicNameValuePair("sensor_precisao", sensor.getPrecisao()));
+        SensorParams.add(new BasicNameValuePair("sensor_tipo", sensor.getTipo()));
+        SensorParams.add(new BasicNameValuePair("sensor_servidorborda", Integer.toString(this.ServidorBordaID)));
+        SensorParams.add(new BasicNameValuePair("sensor_gateway", Integer.toString(gateway.getId())));
+
+        String result = http.GetPageContent(this.insertSensorURI, SensorParams);
+        
+        sensor.setId(Integer.parseInt(result));
     }
     
     void executeAction(UpnpService upnpService, Service NodoTemp) {
@@ -191,5 +269,5 @@ public class EdgeServer  implements Runnable {
 
         upnpService.getControlPoint().execute(getStatusCallback);
 
-    }    
+    }
 }

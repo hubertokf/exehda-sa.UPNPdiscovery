@@ -15,6 +15,7 @@ import org.fourthline.cling.model.meta.RemoteService;
  * @author huberto
  */
 public class Gateway {
+    private int id;
     private String nome;
     private String uid;
     private String tipo;
@@ -34,6 +35,10 @@ public class Gateway {
             Sensor teste = new Sensor(upnpservice, service, "gateawy");
             Sensores.add(teste);
         }
+    }
+    
+    public int getId() {
+        return id;
     }
 
     public String getNome() {
@@ -58,6 +63,10 @@ public class Gateway {
 
     public ArrayList<Sensor> getSensores() {
         return Sensores;
+    }
+    
+    public void setId(int id) {
+        this.id = id;
     }
 
     public void setNome(String nome) {
