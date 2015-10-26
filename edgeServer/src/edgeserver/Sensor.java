@@ -22,8 +22,11 @@ class Sensor {
     private String modelo;
     private String precisao;
     private String tipo;
-    private String gateway;
+    private String gatewayUID;
     private String urlPublicacao;
+    private Float dado;
+    private UpnpService upnpService;
+    private Service sensorService;
     
     Sensor(String nome, String descricao, String modelo, String precisao, String tipo, String gateway) {
         this.nome = nome;
@@ -31,16 +34,19 @@ class Sensor {
         this.modelo = modelo;
         this.precisao = precisao;
         this.tipo = tipo;
-        this.gateway = gateway;
+        this.gatewayUID = gateway;
     }
     
     Sensor(UpnpService upnpService, Service sensor, String gateway){
-        this.nome = this.getData(upnpService, sensor, "GetNome", "ResultNome");
-        this.descricao = this.getData(upnpService, sensor, "GetDescricao", "ResultDescricao");
-        this.modelo = this.getData(upnpService, sensor, "GetModelo", "ResultModelo");
-        this.precisao = this.getData(upnpService, sensor, "GetPrecisao", "ResultPrecisao");
-        this.tipo = this.getData(upnpService, sensor, "GetTipo", "ResultTipo");
-        this.gateway = gateway;
+        this.upnpService = upnpService;
+        this.sensorService = sensor;
+        this.nome = this.getData(this.upnpService, this.sensorService, "GetNome", "ResultNome");
+        this.descricao = this.getData(this.upnpService, this.sensorService, "GetDescricao", "ResultDescricao");
+        this.modelo = this.getData(this.upnpService, this.sensorService, "GetModelo", "ResultModelo");
+        this.precisao = this.getData(this.upnpService, this.sensorService, "GetPrecisao", "ResultPrecisao");
+        this.tipo = this.getData(this.upnpService, this.sensorService, "GetTipo", "ResultTipo");
+        this.dado = Float.parseFloat(this.getData(this.upnpService, this.sensorService, "GetDado", "ResultDado"));
+        this.gatewayUID = gateway;
     }
     
     private String getData(UpnpService upnpService, Service sensor, String action, String output){
@@ -55,6 +61,9 @@ class Sensor {
         return str;
     }
     
+    public void updateDado(){
+        this.dado = Float.parseFloat(this.getData(this.upnpService, this.sensorService, "GetDado", "ResultDado"));
+    }
 
     public String getNome() {
         return nome;
@@ -77,9 +86,13 @@ class Sensor {
     }
 
     public String getGateway() {
-        return gateway;
+        return gatewayUID;
     }
 
+    public Float getDado() {
+        return dado;
+    }
+    
     public void setNome(String nome) {
         this.nome = nome;
     }
@@ -101,7 +114,7 @@ class Sensor {
     }
 
     public void setGateway(String gateway) {
-        this.gateway = gateway;
+        this.gatewayUID = gateway;
     }
 
     public int getId() {

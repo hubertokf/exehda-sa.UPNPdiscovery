@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.Scanner;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 import org.apache.http.NameValuePair;
 import org.apache.http.message.BasicNameValuePair;
 import org.fourthline.cling.UpnpService;
@@ -45,15 +46,17 @@ public class Descoberta implements Runnable {
     private final String urlLogin;
     private final String insertSensorURI;
     private final String insertGatewayURI;
+    private final String toggleGateway;
     private ArrayList<Gateway> gatewaysCadastrados = new ArrayList<>();
     
 
-    public Descoberta(int ServidorBordaID, String urlLogin, String insertSensorURI, String insertGatewayURI, ArrayList<Gateway> gatewaysCadastrados) {
+    public Descoberta(int ServidorBordaID, String urlLogin, String insertSensorURI, String insertGatewayURI, ArrayList<Gateway> gatewaysCadastrados, String toggleGateway) {
         this.ServidorBordaID = ServidorBordaID;
         this.urlLogin = urlLogin;
         this.insertSensorURI = insertSensorURI;
         this.insertGatewayURI = insertGatewayURI;
         this.gatewaysCadastrados = gatewaysCadastrados;
+        this.toggleGateway = toggleGateway;
     }
     
     @Override
@@ -114,7 +117,10 @@ public class Descoberta implements Runnable {
 
                         }
                     }*/
-                    
+                }else if("countCadGateways".equals(command)){
+                    synchronized (gatewaysCadastrados) {
+                        System.out.println(gatewaysCadastrados.size());
+                    }
                 }
             }
             
@@ -162,23 +168,26 @@ public class Descoberta implements Runnable {
                         System.out.println("       * "+service.getServiceId().getId());
                     }
                     System.out.println("------------------------------------------------------------------");
-                    
+                    System.out.println("Publicando no Servidor de Contexto:");
                     Gateway gateway = new Gateway(upnpService, device);
                     
                     //System.out.println(gateway.getUid());
                     
                     try {
                         publicaGateway(gateway);
-                        
                         for(Sensor sensor : gateway.getSensores()){
                             publicaSensor(gateway, sensor);
                         }
                         
-                        gatewaysCadastrados.add(gateway);
+                        synchronized (gatewaysCadastrados) {
+                            gatewaysCadastrados.add(gateway);
+                        }
                     } catch (Exception ex) {
                         Logger.getLogger(EdgeServer.class.getName()).log(Level.SEVERE, null, ex);
                         System.out.println("DEU PAU!");
                     }
+                    
+                    System.out.println("------------------------------------------------------------------");
                     
                     
                 }
@@ -197,12 +206,65 @@ public class Descoberta implements Runnable {
             //SEMPRE QUE UM DISPOSITIVO FOR REMOVIDO EXECUTA ISSO
             @Override
             public void remoteDeviceRemoved(Registry registry, RemoteDevice device) {
-                if ((device.getType()) == type){
-                    System.out.println("Dispositivo Descoberto: ");
+                String deviceUID = device.getIdentity().getUdn().toString();
+                if (device.getType().equals(type) == true){
+                    
+                    synchronized (gatewaysCadastrados) {
+                        List<Gateway> result;
+                        result = gatewaysCadastrados.stream()
+                                .filter(gateway -> gateway.getUid().equals(deviceUID))
+                                .collect(Collectors.toList());
+                    
+                        result.stream().forEach((gateway) -> {
+                            try {
+                                System.out.println("------------------------------------------------------------------");
+                                System.out.println("                        GATEWAY REMOVIDO:                         ");
+                                System.out.println("------------------------------------------------------------------");
+                                System.out.println(" Nome: "+device.getDetails().getFriendlyName());
+                                System.out.println(" UID (unique ID): "+device.getIdentity().getUdn());
+                                System.out.println("------------------------------------------------------------------");
+                                System.out.println(" Desativando gateway no Servidor de Contexto:");
+                                toggleGateway(gateway, "deactivate");
+                                synchronized (gatewaysCadastrados) {
+                                    gatewaysCadastrados.remove(gateway);
+                                }
+                                System.out.println("------------------------------------------------------------------");
+
+                            } catch (Exception ex) {
+                                Logger.getLogger(Descoberta.class.getName()).log(Level.SEVERE, null, ex);
+                            }
+                        });
+                    }                    
                 }
             }
-
         };
+    }
+    
+    private void toggleGateway(Gateway gateway, String job) throws Exception{
+        CookieHandler.setDefault(new CookieManager());
+
+        HTTPClient http = new HTTPClient();
+        
+        List<NameValuePair> postp = new ArrayList<>();
+        postp.add(new BasicNameValuePair("login", "huberto"));
+        postp.add(new BasicNameValuePair("password", "99766330"));
+
+        http.sendPost(this.urlLogin, postp);
+        
+        List<NameValuePair> GatewayParams = new ArrayList<>();
+        GatewayParams.add(new BasicNameValuePair("gateway_id", Integer.toString(gateway.getId())));
+        GatewayParams.add(new BasicNameValuePair("job", job));
+
+        String result = http.GetPageContent(this.toggleGateway, GatewayParams);
+
+        if (null != result)switch (result) {
+            case "desativado":
+                System.out.println("-> Gateway "+gateway.getNome()+"("+gateway.getId()+") DESATIVADO no Servidor de Contexto");
+                break;        
+            case "ativado":
+                System.out.println("-> Gateway "+gateway.getNome()+"("+gateway.getId()+") ATIVADO no Servidor de Contexto");
+                break;
+        }
     }
     
     private void publicaGateway(Gateway gateway) throws Exception{
@@ -223,8 +285,22 @@ public class Descoberta implements Runnable {
         GatewayParams.add(new BasicNameValuePair("gateway_uid", (String)gateway.getUid()));
 
         String result = http.GetPageContent(this.insertGatewayURI, GatewayParams);
+        //System.out.println(result);
         
-        gateway.setId(Integer.parseInt(result));
+        String publicType = result.split(":")[0];
+        String gatewayID = result.split(":")[1];
+
+        gateway.setId(Integer.parseInt(gatewayID));
+        
+        if (null != publicType)switch (publicType) {
+            case "insert":
+                System.out.println("-> Gateway "+gateway.getNome()+"("+gateway.getId()+") cadastrado no Servidor de Contexto com sucesso.");
+                break;        
+            case "update":
+                System.out.println("-> Gateway "+gateway.getNome()+"("+gateway.getId()+") atualizado no Servidor de Contexto com sucesso.");
+                toggleGateway(gateway, "activate");
+                break;
+        }
     }
     
     private void publicaSensor(Gateway gateway, Sensor sensor) throws Exception{
@@ -251,8 +327,20 @@ public class Descoberta implements Runnable {
         SensorParams.add(new BasicNameValuePair("sensor_gateway", Integer.toString(gateway.getId())));
 
         String result = http.GetPageContent(this.insertSensorURI, SensorParams);
+        //System.out.println(result);
+        String publicType = result.split(":")[0];
+        String sensorID = result.split(":")[1];
         
-        sensor.setId(Integer.parseInt(result));
+        sensor.setId(Integer.parseInt(sensorID));
+        
+        if (null != publicType)switch (publicType) {
+            case "insert":
+                System.out.println("-> Sensor "+sensor.getNome()+"("+sensor.getId()+") cadastrado no Servidor de Contexto com sucesso.");
+                break;        
+            case "update":
+                System.out.println("-> Sensor "+sensor.getNome()+"("+sensor.getId()+") atualizado no Servidor de Contexto com sucesso.");
+                break;
+        }
     }
     
     void executeAction(UpnpService upnpService, Service NodoTemp) {

@@ -32,7 +32,7 @@ public class Gateway {
         Sensores = new ArrayList();
         int i = 0;
         for (RemoteService service : device.findServices()) {
-            Sensor teste = new Sensor(upnpservice, service, "gateawy");
+            Sensor teste = new Sensor(upnpservice, service, uid);
             Sensores.add(teste);
         }
     }
