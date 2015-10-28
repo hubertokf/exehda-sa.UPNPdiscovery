@@ -13,7 +13,7 @@ import org.fourthline.cling.binding.annotations.*;
  */
 
 @UpnpService(
-    serviceId = @UpnpServiceId("NodoTemp"),
+    serviceId = @UpnpServiceId("NodoTempNativo"),
     serviceType = @UpnpServiceType(value = "NodoTemp", version = 1)
 )
 public class NodoTemp {

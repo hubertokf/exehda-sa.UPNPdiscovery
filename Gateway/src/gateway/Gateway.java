@@ -58,7 +58,7 @@ public class Gateway implements Runnable{
         //Cria uma identidade para o dispositivo
         DeviceIdentity identity = new DeviceIdentity(
                         // Identificação unica para o dispositivo
-                        UDN.uniqueSystemIdentifier("LupsGateway")
+                        UDN.uniqueSystemIdentifier("LupsNativeGateway")
                     );
         
         // Cria um tipo de dispositivo/versão
@@ -68,12 +68,12 @@ public class Gateway implements Runnable{
         DeviceDetails details =
                 new DeviceDetails(
                         //nome amigável
-                        "Gateway LUPS",
+                        "Gateway LUPS Nativo",
                         //fabricante
                         new ManufacturerDetails("LUPS"),
                         //detalhes do modelo [nome, descrição, versão
                         new ModelDetails(
-                                "Gateway LUPS",
+                                "Gateway LUPS Nativo",
                                 "Um gateway do laboratório de pesquisa LUPS",
                                 "v1"
                         )
