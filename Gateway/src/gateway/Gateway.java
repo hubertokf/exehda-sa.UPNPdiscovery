@@ -90,11 +90,11 @@ public class Gateway implements Runnable{
         LocalService<NodoTemp> NodoServiceTemp = new AnnotationLocalServiceBinder().read(NodoTemp.class);
         NodoServiceTemp.setManager( new DefaultServiceManager(NodoServiceTemp, NodoTemp.class) );
         
-        LocalService<NodoHumi> NodoServiceHumi = new AnnotationLocalServiceBinder().read(NodoHumi.class);
-        NodoServiceHumi.setManager( new DefaultServiceManager(NodoServiceHumi, NodoHumi.class) );        
+        //LocalService<NodoHumi> NodoServiceHumi = new AnnotationLocalServiceBinder().read(NodoHumi.class);
+        //NodoServiceHumi.setManager( new DefaultServiceManager(NodoServiceHumi, NodoHumi.class) );        
         
         //envia o novo dispositivo para ser de fato criado e cadastrado
-        return new LocalDevice(identity, type, details, new LocalService[] {NodoServiceTemp, NodoServiceHumi});
+        //return new LocalDevice(identity, type, details, new LocalService[] {NodoServiceTemp, NodoServiceHumi});
 
         /* 
         Varios serviços podem ser vinculados ao mesmo dispositivo:
@@ -102,7 +102,7 @@ public class Gateway implements Runnable{
         
         Ou apenas um:
                  */
-        //return new LocalDevice(identity, type, details, NodoServiceTemp);
+        return new LocalDevice(identity, type, details, NodoServiceTemp);
        
     }
     
