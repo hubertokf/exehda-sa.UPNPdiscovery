@@ -16,12 +16,19 @@ import java.util.concurrent.TimeUnit;
  */
 public class EdgeServer{
     
-    private static final int ServidorBordaID = 9;
-    private static final String urlLogin = "http://localhost/exehdager-teste/index.php/ci_login/logar";
-    private static final String insertSensorURI = "http://localhost/exehdager-teste/index.php/cadastros/ci_sensor/gravaSensor";
-    private static final String insertGatewayURI = "http://localhost/exehdager-teste/index.php/cadastros/ci_gateway/gravaGateway";
-    private static final String urlInsertDado = "http://localhost/exehdager-teste/index.php/cadastros/ci_publicacao/gravaPublicacao";
-    private static final String toggleGateway = "http://localhost/exehdager-teste/index.php/cadastros/ci_gateway/toggleGateway";
+    //private static final int ServidorBordaID = 9;
+    //private static final String urlLogin = "http://localhost/exehdager-teste/index.php/ci_login/logar";
+    //private static final String insertSensorURI = "http://localhost/exehdager-teste/index.php/cadastros/ci_sensor/gravaSensor";
+    //private static final String insertGatewayURI = "http://localhost/exehdager-teste/index.php/cadastros/ci_gateway/gravaGateway";
+    //private static final String urlInsertDado = "http://localhost/exehdager-teste/index.php/cadastros/ci_publicacao/gravaPublicacao";
+    //private static final String toggleGateway = "http://localhost/exehdager-teste/index.php/cadastros/ci_gateway/toggleGateway";
+    
+    private static final int ServidorBordaID = 2;
+    private static final String urlLogin = "http://amplus.ufpel.edu.br/lups-iot/index.php/ci_login/logar";
+    private static final String insertSensorURI = "http://amplus.ufpel.edu.br/lups-iot/index.php/cadastros/ci_sensor/gravaSensor";
+    private static final String insertGatewayURI = "http://amplus.ufpel.edu.br/lups-iot/index.php/cadastros/ci_gateway/gravaGateway";
+    private static final String urlInsertDado = "http://amplus.ufpel.edu.br/lups-iot/index.php/cadastros/ci_publicacao/gravaPublicacao";
+    private static final String toggleGateway = "http://amplus.ufpel.edu.br/lups-iot/index.php/cadastros/ci_gateway/toggleGateway";
     private static ArrayList<Gateway> gatewaysCadastrados = new ArrayList<>();
         
     public static void main(String[] args) {
