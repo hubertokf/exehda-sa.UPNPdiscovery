@@ -38,7 +38,7 @@ public class EdgeServer{
         clientThread.start();
         
         ScheduledExecutorService exec = Executors.newSingleThreadScheduledExecutor();
-        exec.scheduleAtFixedRate(new publicacao(gatewaysCadastrados, ServidorBordaID, urlLogin, urlInsertDado), 0, 1, TimeUnit.MINUTES);
+        exec.scheduleAtFixedRate(new publicacao(gatewaysCadastrados, ServidorBordaID, urlLogin, urlInsertDado), 0, 10, TimeUnit.MINUTES);
     }
 
     
