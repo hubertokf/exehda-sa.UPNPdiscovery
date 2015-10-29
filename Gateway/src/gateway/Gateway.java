@@ -5,6 +5,8 @@
  */
 package gateway;
 
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import org.fourthline.cling.UpnpService;
 import org.fourthline.cling.UpnpServiceImpl;
 import org.fourthline.cling.binding.*;
@@ -14,12 +16,24 @@ import org.fourthline.cling.model.meta.*;
 import org.fourthline.cling.model.types.*;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.Properties;
 
 /**
  *
  * @author huberto
  */
 public class Gateway implements Runnable{
+    private String Name;
+    private String Type;
+    private String FriendlyName;
+    private String ManufacturerDetails;
+    private String Description;
+    private String Version;
+    
+    private static Properties prop = new Properties();
+    private static InputStream input = null;
 
     public static void main(String[] args) throws Exception {
         // Start a user thread that runs the UPnP stack
@@ -29,6 +43,9 @@ public class Gateway implements Runnable{
     }
 
     public void run() {
+        System.out.println("Lendo arquivo de configuração.");
+        readConfig();
+        
         try {
 
              final UpnpService upnpService = new UpnpServiceImpl();
@@ -39,7 +56,6 @@ public class Gateway implements Runnable{
                     upnpService.shutdown();
                 }
             });
-
             // Add the bound local device to the registry
             upnpService.getRegistry().addDevice(
                     createDevice()
@@ -58,24 +74,24 @@ public class Gateway implements Runnable{
         //Cria uma identidade para o dispositivo
         DeviceIdentity identity = new DeviceIdentity(
                         // Identificação unica para o dispositivo
-                        UDN.uniqueSystemIdentifier("LupsGateway")
+                        UDN.uniqueSystemIdentifier(this.Name)
                     );
         
         // Cria um tipo de dispositivo/versão
-        DeviceType type = new UDADeviceType("Gateway", 1);
+        DeviceType type = new UDADeviceType(this.Type, Integer.parseInt(this.Version));
         
         //Adiciona detalhes ao dispositivo
         DeviceDetails details =
                 new DeviceDetails(
                         //nome amigável
-                        "Gateway LUPS",
+                        this.FriendlyName,
                         //fabricante
-                        new ManufacturerDetails("LUPS"),
+                        new ManufacturerDetails(this.ManufacturerDetails),
                         //detalhes do modelo [nome, descrição, versão
                         new ModelDetails(
-                                "Gateway LUPS",
-                                "Um gateway do laboratório de pesquisa LUPS",
-                                "v1"
+                                this.FriendlyName,
+                                this.Description,
+                                this.Version
                         )
                 );
         
@@ -105,5 +121,116 @@ public class Gateway implements Runnable{
         return new LocalDevice(identity, type, details, NodoServiceTemp);
        
     }
+    
+    private void readConfig(){
+        try {
+            input = new FileInputStream("config.properties");
+
+            // load a properties file
+            prop.load(input);
+            // get the property value and print it out
+            this.setName(prop.getProperty("nome"));
+            this.setType(prop.getProperty("tipo"));
+            this.setFriendlyName(prop.getProperty("nomeAmigavel"));
+            this.setManufacturerDetails(prop.getProperty("fabricanteDetalhes"));
+            this.setDescription(prop.getProperty("descricao"));
+            this.setVersion(prop.getProperty("versao"));
+
+	} catch (IOException ex) {
+            //ex.printStackTrace();
+            System.out.println("Arquivo de configuração não encontrado.");
+            System.out.println("Criando arquivo de configuração padrão..");
+            this.createDefaultConfigFile();
+            this.readConfig();
+	} finally {
+            if (input != null) {
+                try {
+                    System.out.println("Arquivo de configuração lido com sucesso.");
+                    input.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+	}
+    }
+    
+    private void createDefaultConfigFile(){
+        OutputStream output = null;
+        
+	try {
+            output = new FileOutputStream("config.properties");
+
+            // set the properties value
+            prop.setProperty("nome", "LupsNativeGateway");
+            prop.setProperty("tipo", "GatewayNativo");
+            prop.setProperty("nomeAmigavel", "Gateway Nativo LUPS");
+            prop.setProperty("fabricanteDetalhes", "LUPS");
+            prop.setProperty("descricao", "Um gateway do laboratório de pesquisa LUPS");
+            prop.setProperty("versao", "1");
+
+            // save properties to project root folder
+            prop.store(output, null);
+
+	} catch (IOException io) {
+            io.printStackTrace();
+	} finally {
+            if (output != null) {
+                try {
+                    output.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+	}
+    }
+
+    public String getName() {
+        return Name;
+    }
+
+    public void setName(String Name) {
+        this.Name = Name;
+    }
+
+    public String getType() {
+        return Type;
+    }
+
+    public void setType(String Type) {
+        this.Type = Type;
+    }
+
+    public String getFriendlyName() {
+        return FriendlyName;
+    }
+
+    public void setFriendlyName(String FriendlyName) {
+        this.FriendlyName = FriendlyName;
+    }
+
+    public String getManufacturerDetails() {
+        return ManufacturerDetails;
+    }
+
+    public void setManufacturerDetails(String ManufacturerDetails) {
+        this.ManufacturerDetails = ManufacturerDetails;
+    }
+
+    public String getDescription() {
+        return Description;
+    }
+
+    public void setDescription(String Description) {
+        this.Description = Description;
+    }
+
+    public String getVersion() {
+        return Version;
+    }
+
+    public void setVersion(String Version) {
+        this.Version = Version;
+    }
+    
     
 }

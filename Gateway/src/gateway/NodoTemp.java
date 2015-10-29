@@ -71,7 +71,7 @@ public class NodoTemp {
         this.dado = Float.parseFloat(t.execute("python nodoTemp.py"));
         
         return dado;
-    }    
+    }
     
 //    public static float gerarNumero(float minX, float maxX) {  
 //        Random r = new Random();

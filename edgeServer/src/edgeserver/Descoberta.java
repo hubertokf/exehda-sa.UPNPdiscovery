@@ -138,7 +138,9 @@ public class Descoberta implements Runnable {
 
             // CRIA UM NOVO TIPO DE SERVIÇO A SER BUSCADO
             ServiceId serviceId = new UDAServiceId("NodoTemp");
-            DeviceType type = new UDADeviceType("Gateway");
+            DeviceType nativeType = new UDADeviceType("GatewayNativo");
+            DeviceType virtualType = new UDADeviceType("GatewayVirtual");
+            DeviceType proprietaryType = new UDADeviceType("GatewayProprietario");
             
             //SEMPRE QUE UM DISPOSITIVO FOR ENCONTRADO E ADICIONADO EXECUTA ISSO
             @Override
@@ -154,7 +156,7 @@ public class Descoberta implements Runnable {
 //
 //                    System.out.println("Service discovered: " + NodoTemp);
                 
-                if (device.getType().equals(type) == true){
+                if (device.getType().equals(nativeType) == true || device.getType().equals(virtualType) == true || device.getType().equals(proprietaryType) == true){
                     System.out.println("------------------------------------------------------------------");
                     System.out.println("                       GATEWAY DESCOBERTO:                        ");
                     System.out.println("------------------------------------------------------------------");
@@ -207,7 +209,7 @@ public class Descoberta implements Runnable {
             @Override
             public void remoteDeviceRemoved(Registry registry, RemoteDevice device) {
                 String deviceUID = device.getIdentity().getUdn().toString();
-                if (device.getType().equals(type) == true){
+                if (device.getType().equals(nativeType) == true || device.getType().equals(virtualType) == true || device.getType().equals(proprietaryType) == true){
                     
                     synchronized (gatewaysCadastrados) {
                         List<Gateway> result;
