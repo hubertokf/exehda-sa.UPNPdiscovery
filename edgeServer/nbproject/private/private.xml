@@ -5,11 +5,8 @@
         <group name="exehda-sa.UPNPdiscovery"/>
         <group>
             <file>file:/home/huberto/NetBeansProjects/exehda-sa.UPNPdiscovery/edgeServer/src/edgeserver/EdgeServer.java</file>
-<<<<<<< HEAD
             <file>file:/home/huberto/NetBeansProjects/exehda-sa.UPNPdiscovery/edgeServer/src/edgeserver/Sensor.java</file>
             <file>file:/home/huberto/NetBeansProjects/exehda-sa.UPNPdiscovery/edgeServer/src/edgeserver/Descoberta.java</file>
-=======
->>>>>>> branch 'master' of https://github.com/hubertokf/exehda-sa.UPNPdiscovery.git
         </group>
     </open-files>
 </project-private>
