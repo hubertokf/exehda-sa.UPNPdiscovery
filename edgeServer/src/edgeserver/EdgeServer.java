@@ -33,6 +33,7 @@ public class EdgeServer{
     private InputStream input = null;
     
     private static ArrayList<Gateway> gatewaysCadastrados = new ArrayList<>();
+    private static ArrayList<Publicacao> filaPublicacoes = new ArrayList<>();
 
     public EdgeServer() {
         
@@ -58,8 +59,13 @@ public class EdgeServer{
         clientThread.start();
         
         ScheduledExecutorService exec = Executors.newSingleThreadScheduledExecutor();
-        exec.scheduleAtFixedRate(new publicacao(gatewaysCadastrados, edgeServer.getServidorBordaID(), edgeServer.getUrlLogin(), edgeServer.getUrlInsertDado()), 0, edgeServer.getTempoPublicacao(), TimeUnit.MINUTES);
-    } 
+        exec.scheduleAtFixedRate(
+            new Publicador(filaPublicacoes, gatewaysCadastrados, edgeServer),
+            0,
+            edgeServer.getTempoPublicacao(), 
+            TimeUnit.MINUTES
+        );
+    }
     
     private void readConfig(){
         try {

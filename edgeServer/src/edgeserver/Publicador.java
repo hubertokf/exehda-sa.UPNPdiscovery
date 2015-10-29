@@ -20,23 +20,47 @@ import org.apache.http.message.BasicNameValuePair;
  *
  * @author huberto
  */
-public class publicacao implements Runnable {
-    private ArrayList<Gateway> gatewaysCadastrados = new ArrayList<>();
+public class Publicador implements Runnable {
     private final int ServidorBordaID;
     private final String urlLogin;
     private final String urlInsertDado;
     private final Date date;
+    private ArrayList<Gateway> gatewaysCadastrados = new ArrayList<>();
+    private ArrayList<Publicacao> filaPublicacoes = new ArrayList<>();
 
-    publicacao(ArrayList<Gateway> gatewaysCadastrados, int ServidorBordaID, String urlLogin, String urlInsertDado) {
+    Publicador(ArrayList<Publicacao> filaPublicacoes, ArrayList<Gateway> gatewaysCadastrados, EdgeServer edgeServer) {
+        this.filaPublicacoes = filaPublicacoes;
         this.gatewaysCadastrados = gatewaysCadastrados;
-        this.ServidorBordaID = ServidorBordaID;
-        this.urlLogin = urlLogin;
-        this.urlInsertDado = urlInsertDado;
+        this.ServidorBordaID = edgeServer.getServidorBordaID();
+        this.urlLogin = edgeServer.getUrlLogin();
+        this.urlInsertDado = edgeServer.getUrlInsertDado();
         this.date = new Date();
     }
 
     @Override
     public void run() {
+        System.out.println("Inicializando Publicador.");
+        System.out.println("Verificando contexão com o Servidor de Contexto: ");
+        try {
+            this.testServer();
+        } catch (Exception ex) {
+            System.out.print("Fail");
+            System.out.println("Conexão com o servidor de Contexto não estabelecida. Armazenando publicação.");
+            
+            
+            Logger.getLogger(Publicador.class.getName()).log(Level.SEVERE, null, ex);
+        } finally {
+            System.out.print("OK");
+            
+            synchronized(filaPublicacoes){
+                if (!filaPublicacoes.isEmpty()){
+                    this.publicaFila(filaPublicacoes);
+                }
+            }
+            System.out.println("Publicando fila de publicações:");
+        }
+        
+        
         synchronized (gatewaysCadastrados) {
             System.out.println("Total de "+Integer.toString(gatewaysCadastrados.size())+" gateways a serem publicados.");
             gatewaysCadastrados.stream().forEach((gateway) -> {
@@ -44,11 +68,35 @@ public class publicacao implements Runnable {
                     try {
                         publicaDado(sensor);
                     } catch (Exception ex) {
-                        Logger.getLogger(publicacao.class.getName()).log(Level.SEVERE, null, ex);
+                        Logger.getLogger(Publicador.class.getName()).log(Level.SEVERE, null, ex);
                     }
                 });
             });
         }
+    }
+    
+    private String testServer() throws Exception{
+        // make sure cookies is turn on
+        CookieHandler.setDefault(new CookieManager());
+
+        HTTPClient http = new HTTPClient();
+        
+        List<NameValuePair> GatewayParams = new ArrayList<>();
+
+        String result = http.GetPageContent(this.urlInsertDado, GatewayParams);
+        
+        return result;
+    }
+    
+    private void publicaFila(ArrayList<Publicacao> filaPublicacoes){
+        filaPublicacoes.stream().forEach((publicacao) -> {
+            try {
+                // PAREI AQUI!!
+                publicacao.publica(this.urlLogin, this.urlInsertDado);
+            } catch (Exception ex) {
+                Logger.getLogger(Publicador.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        });
     }
     
     private void publicaDado(Sensor sensor) throws Exception{
@@ -71,13 +119,6 @@ public class publicacao implements Runnable {
         GatewayParams.add(new BasicNameValuePair("publicacao_datacoleta", new Timestamp(date.getTime()).toString()));
         GatewayParams.add(new BasicNameValuePair("publicacao_datapublicacao", new Timestamp(date.getTime()).toString()));
         GatewayParams.add(new BasicNameValuePair("publicacao_valorcoletado", Float.toString(sensor.getDado())));
-        
-//        GatewayParams.add(new BasicNameValuePair("publicacao_servidorborda", "9"));
-//        GatewayParams.add(new BasicNameValuePair("publicacao_sensor", "13"));
-//        GatewayParams.add(new BasicNameValuePair("publicacao_datacoleta", new Timestamp(date.getTime()).toString()));
-//        GatewayParams.add(new BasicNameValuePair("publicacao_datapublicacao", new Timestamp(date.getTime()).toString()));
-//        GatewayParams.add(new BasicNameValuePair("publicacao_valorcoletado", "0"));
-
 
         String result = http.GetPageContent(this.urlInsertDado, GatewayParams);
     }
