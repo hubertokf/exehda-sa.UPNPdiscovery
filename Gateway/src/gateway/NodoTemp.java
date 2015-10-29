@@ -13,12 +13,12 @@ import org.fourthline.cling.binding.annotations.*;
  */
 
 @UpnpService(
-    serviceId = @UpnpServiceId("NodoTempVirtual"),
+    serviceId = @UpnpServiceId("NodoTempNativo"),
     serviceType = @UpnpServiceType(value = "NodoTemp", version = 1)
 )
 public class NodoTemp {
     @UpnpStateVariable(defaultValue = "0", sendEvents = false)
-    private String nome = "NodoTempVirtual";
+    private String nome = "NodoTempNativo";
     @UpnpStateVariable(defaultValue = "0", sendEvents = false)
     private String descricao = "Sensor de temperatura";
     @UpnpStateVariable(defaultValue = "0", sendEvents = false)
