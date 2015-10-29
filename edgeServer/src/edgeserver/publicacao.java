@@ -9,6 +9,7 @@ import java.net.CookieHandler;
 import java.net.CookieManager;
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -24,12 +25,14 @@ public class publicacao implements Runnable {
     private final int ServidorBordaID;
     private final String urlLogin;
     private final String urlInsertDado;
+    private final Date date;
 
     publicacao(ArrayList<Gateway> gatewaysCadastrados, int ServidorBordaID, String urlLogin, String urlInsertDado) {
         this.gatewaysCadastrados = gatewaysCadastrados;
         this.ServidorBordaID = ServidorBordaID;
         this.urlLogin = urlLogin;
         this.urlInsertDado = urlInsertDado;
+        this.date = new Date();
     }
 
     @Override
@@ -59,7 +62,6 @@ public class publicacao implements Runnable {
         postp.add(new BasicNameValuePair("password", "99766330"));
         
         http.sendPost(this.urlLogin, postp);
-        java.util.Date date= new java.util.Date();
         
         sensor.updateDado();
         
