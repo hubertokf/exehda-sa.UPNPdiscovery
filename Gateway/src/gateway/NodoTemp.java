@@ -66,9 +66,9 @@ public class NodoTemp {
     public Float getDado() {
         // If you want to pass extra UPnP information on error:
         // throw new ActionException(ErrorCode.ACTION_NOT_AUTHORIZED);
-        //Terminal t = new Terminal();
+        Terminal t = new Terminal();
         
-        //this.dado = Float.parseFloat(t.execute("python nodoTemp.py"));
+        this.dado = Float.parseFloat(t.execute("python nodoTemp.py"));
         
         return dado;
     }
