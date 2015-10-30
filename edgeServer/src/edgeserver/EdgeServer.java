@@ -62,7 +62,7 @@ public class EdgeServer{
             new Publicador(gatewaysCadastrados, edgeServer),
             0,
             edgeServer.getTempoPublicacao(), 
-            TimeUnit.SECONDS
+            TimeUnit.MINUTES
         );
     }
     
