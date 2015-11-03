@@ -12,8 +12,8 @@ import java.util.List;
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.HttpClient;
+import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
-import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.impl.client.HttpClientBuilder;
 
@@ -30,9 +30,17 @@ public class HTTPClient {
     void sendPost(String url, List<NameValuePair> postParams) 
         throws Exception {
         
+        int CONNECTION_TIMEOUT = 30 * 1000; // timeout in millis
+        RequestConfig requestConfig = RequestConfig.custom()
+        .setConnectionRequestTimeout(CONNECTION_TIMEOUT)
+        .setConnectTimeout(CONNECTION_TIMEOUT)
+        .setSocketTimeout(CONNECTION_TIMEOUT)
+        .build();
+        
         //System.out.println(postParams);
 
 	HttpPost post = new HttpPost(url);
+        post.setConfig(requestConfig);
 
 	// add header
 	post.setHeader("Host", "localhost");
@@ -71,8 +79,15 @@ public class HTTPClient {
   }
 
   String GetPageContent(String url, List<NameValuePair> postParams) throws Exception {
+        int CONNECTION_TIMEOUT = 30 * 1000; // timeout in millis
+        RequestConfig requestConfig = RequestConfig.custom()
+        .setConnectionRequestTimeout(CONNECTION_TIMEOUT)
+        .setConnectTimeout(CONNECTION_TIMEOUT)
+        .setSocketTimeout(CONNECTION_TIMEOUT)
+        .build();
 
 	HttpPost request = new HttpPost(url);
+        request.setConfig(requestConfig);
 
 	request.setHeader("User-Agent", USER_AGENT);
 	request.setHeader("Accept",
